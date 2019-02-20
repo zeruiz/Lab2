@@ -1,1 +1,41 @@
 
+
+```{r}
+library(ggplot2)
+library(sf)
+library(tidyverse)
+library(ggrepel)
+library(ggspatial)
+```
+
+```{r}
+dat <- read_sf("Data/ME-GIS-master/Cities.shp")
+dat %>% head()
+```
+
+
+```{r}
+p <- ggplot() +
+  geom_sf(data = read_sf("Data/ME-GIS-master/Coastline2.shp"), 
+          colour="grey10", fill="grey90") +
+  geom_sf(data = read_sf("Data/ME-GIS-master/Rivers19.shp"), 
+          colour="steelblue", size=0.3) +
+  geom_sf(data = read_sf("Data/ME-GIS-master/PrimaryRoads.shp"), 
+          size = 0.7, colour="grey30") +
+  geom_sf(data = read_sf("Data/ME-GIS-master/Cities.shp")) +
+  theme_bw()
+p <- p + geom_label_repel(
+    data =  read_sf("Data/ME-GIS-master/Cities.shp"),
+    aes(label = Name, geometry = geometry),
+    stat = "sf_coordinates",
+    min.segment.length = 0,
+    colour = "gray",
+    segment.colour = "gray"
+  )
+p <- p + annotation_scale() + annotation_north_arrow()
+p
+
+#p <- p + geom_sf_text(data = read_sf("Data/ME-GIS-master/Cities.shp"), aes(label = Name))
+#p <- p + annotation_scale()
+#p
+```
