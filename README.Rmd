@@ -1,9 +1,10 @@
 ---
 title: "STAT585_Lab2"
-author: "Zerui Zhang"
-date: "2/20/2019"
+author: "Group 2: Zerui Zhang, Oscar Aguilar, Kellie McClernon"
+date: "2/23/2019"
 output: pdf_document
 ---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -17,7 +18,16 @@ library(ggplot2)
 library(dplyr)
 ```
 
-plot the original plot
+
+```{r}
+library(ggplot2)
+library(sf)
+library(tidyverse)
+library(ggrepel)
+library(ggspatial)
+```
+
+
 ```{r}
 p <- ggplot() +
   geom_sf(data = read_sf("Data/ME-GIS-master/Coastline2.shp"), 
