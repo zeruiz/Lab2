@@ -1,1 +1,105 @@
+---
+title: "STAT585_Lab2"
+author: "Zerui Zhang"
+date: "2/20/2019"
+output: pdf_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(sf)
+library(ggspatial)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+
+plot the original plot
+```{r}
+p <- ggplot() +
+  geom_sf(data = read_sf("Data/ME-GIS-master/Coastline2.shp"), 
+          colour="grey10", fill="grey90") +
+  geom_sf(data = read_sf("Data/ME-GIS-master/Rivers19.shp"), 
+          colour="steelblue", size=0.3) +
+  geom_sf(data = read_sf("Data/ME-GIS-master/PrimaryRoads.shp"), 
+          size = 0.7, colour="grey30") +
+  geom_sf(data = read_sf("Data/ME-GIS-master/Cities.shp")) +
+  theme_bw()
+p
+```
+
+Add the labels
+```{r, echo=TRUE}
+library(ggrepel)
+p + 
+  geom_label_repel(data = read_sf("Data/ME-GIS-master/Cities.shp"),
+                   aes(label = Name, geometry = geometry),
+                   stat = "sf_coordinates", 
+                   min.segment.length = 0, 
+                   colour = "gray", 
+                   segment.colour = "gray")+ 
+  annotation_scale() + 
+  annotation_north_arrow(which_north = "true", location = "true", style = north_arrow_nautical())
+```
+
+Australia shapefile
+
+```{r}
+ozbig <- read_sf("Data/gadm36_AUS_shp/gadm36_AUS_1.shp")
+oz_st <- maptools::thinnedSpatialPoly(
+  as(ozbig, "Spatial"), tolerance = 0.1, 
+  minarea = 0.001, topologyPreserve = TRUE)
+oz <- st_as_sf(oz_st)
+```
+
+```{r}
+## Help calculate the group.
+## Input: oz$geometry
+helper.group <- function(geo){
+  geo %>% 
+    unlist(., recursive = FALSE) %>% 
+    unlist(., recursive = FALSE) -> dd
+  countgrouprep <- unlist(map(dd, nrow))
+  num_group <- length(countgrouprep)
+  rep(1:num_group, time = countgrouprep)
+}
+
+## Help calculate the order.
+## Input: oz$geometry[[i]]
+helper.order <- function(geol){
+  geol %>% 
+    unlist(., recursive = FALSE) -> d
+  longlat <- do.call(rbind, d)
+  order_num <- sum(unlist(map(d, nrow)))
+  order <- seq(1:order_num)
+  cbind(longlat, order)
+}
+res <- map(oz$geometry, .f=helper.order)
+ress <- do.call(rbind, res)
+group <- helper.group(oz$geometry)
+ress <- cbind(ress, group)
+colnames(ress) <- c("long", "lat", "order", "group")
+ress <- as.data.frame(ress)
+ress %>% ggplot(aes(x=long,y=lat,group=group)) + geom_polygon() + theme_bw()
+```
+
+
+We pcik France
+
+```{r, echo=TRUE}
+frabig <- read_sf("Data/gadm36_FRA_shp/gadm36_FRA_1.shp")
+fra_st <- maptools::thinnedSpatialPoly(
+  as(frabig, "Spatial"), tolerance = 0.1, 
+  minarea = 0.001, topologyPreserve = TRUE)
+fr <- st_as_sf(fra_st)
+frres <- map(fr$geometry, .f=helper.order)
+frress <- do.call(rbind, frres)
+frgroup <- helper.group(fr$geometry)
+frress <- cbind(frress, frgroup)
+colnames(frress) <- c("long", "lat", "order", "group")
+frress <- as.data.frame(frress)
+frress %>% ggplot(aes(x=long,y=lat,group=group)) + geom_polygon() + theme_bw()
+```
