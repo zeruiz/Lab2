@@ -89,17 +89,24 @@ helper.order <- function(geol){
   order <- seq(1:order_num)
   cbind(longlat, order)
 }
-res <- map(oz$geometry, .f=helper.order)
-ress <- do.call(rbind, res)
-group <- helper.group(oz$geometry)
-ress <- cbind(ress, group)
-colnames(ress) <- c("long", "lat", "order", "group")
-ress <- as.data.frame(ress)
-ress %>% ggplot(aes(x=long,y=lat,group=group)) + geom_polygon() + theme_bw()
+
+## Converts shapefile to lat-long file
+## Input: oz$geometry
+sh2lat <- function(geofile){
+  res <- map(geofile, .f=helper.order)
+  ress <- do.call(rbind, res)
+  group <- helper.group(geofile)
+  ress <- cbind(ress, group)
+  colnames(ress) <- c("long", "lat", "order", "group")
+  ress <- as.data.frame(ress)
+}
+
+ozplus <- sh2lat(oz$geometry)
+ozplus %>% ggplot(aes(x=long,y=lat,group=group)) + geom_polygon() + theme_bw()
 ```
 
 
-We pcik France
+We picked France:
 
 ```{r, echo=TRUE}
 frabig <- read_sf("Data/gadm36_FRA_shp/gadm36_FRA_1.shp")
@@ -107,11 +114,15 @@ fra_st <- maptools::thinnedSpatialPoly(
   as(frabig, "Spatial"), tolerance = 0.1, 
   minarea = 0.001, topologyPreserve = TRUE)
 fr <- st_as_sf(fra_st)
-frres <- map(fr$geometry, .f=helper.order)
-frress <- do.call(rbind, frres)
-frgroup <- helper.group(fr$geometry)
-frress <- cbind(frress, frgroup)
-colnames(frress) <- c("long", "lat", "order", "group")
-frress <- as.data.frame(frress)
-frress %>% ggplot(aes(x=long,y=lat,group=group)) + geom_polygon() + theme_bw()
+
+frplus <- sh2lat(fr$geometry)
+frplus %>% ggplot(aes(x=long,y=lat,group=group)) + geom_polygon() + theme_bw()
+
+#frres <- map(fr$geometry, .f=helper.order)
+#frress <- do.call(rbind, frres)
+#frgroup <- helper.group(fr$geometry)
+#frress <- cbind(frress, frgroup)
+#colnames(frress) <- c("long", "lat", "order", "group")
+#frress <- as.data.frame(frress)
+#frress %>% ggplot(aes(x=long,y=lat,group=group)) + geom_polygon() + theme_bw()
 ```
