@@ -71,10 +71,8 @@ oz <- st_as_sf(oz_st)
 ## Help calculate the group.
 ## Input: oz$geometry
 helper.group <- function(geo){
-  geo %>% 
-    unlist(., recursive = FALSE) %>% 
-    unlist(., recursive = FALSE) -> dd
-  countgrouprep <- unlist(map(dd, nrow))
+  geo %>% flatten() %>% flatten()-> dd
+  countgrouprep <- flatten_int(map(dd, nrow))
   num_group <- length(countgrouprep)
   rep(1:num_group, time = countgrouprep)
 }
@@ -82,10 +80,9 @@ helper.group <- function(geo){
 ## Help calculate the order.
 ## Input: oz$geometry[[i]]
 helper.order <- function(geol){
-  geol %>% 
-    unlist(., recursive = FALSE) -> d
+  geol %>% flatten() -> d
   longlat <- do.call(rbind, d)
-  order_num <- sum(unlist(map(d, nrow)))
+  order_num <- sum(flatten_int(map(d, nrow)))
   order <- seq(1:order_num)
   cbind(longlat, order)
 }
